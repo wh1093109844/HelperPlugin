@@ -15,9 +15,9 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     //     chrome.pageAction.show(tabId);
     // }
     chrome.pageAction.show(tabId);
-    port = chrome.tabs.connect(tabId, {"name": "handler"});
+    currentTabId = tabId;
 };
-
+var currentTabId;
 chrome.tabs.onUpdated.addListener(checkForValidUrl);
 // var port = chrome.tabs.connect(tabId, {"name": "handler"});
 var orderList = new Array();
@@ -37,7 +37,9 @@ chrome.runtime.onConnect.addListener((port) => {
     })
 });
 function sendMsg(userInfo) {
-    port.postMessage(userInfo);
+    orderList.concat(userInfo);
+    // chrome.runtime.connect().postMessage(userInfo);
+    chrome.tabs.connect(currentTabId, {"name": "handler"}).postMessage(userInfo);
 }
 
 var isNeedQuery = true;

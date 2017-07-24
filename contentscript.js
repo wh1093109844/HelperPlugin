@@ -1,6 +1,7 @@
 
 chrome.extension.onConnect.addListener((port) => {
     port.onMessage.addListener((userInfo) => {
+        alert("true")
         var orderList = filterOrder(userInfo.ids)
         var info = {"from": "FROM_CONTENT", "orderList": orderList};
         chrome.runtime.connect().postMessage(info);
@@ -30,15 +31,15 @@ function filterOrder(ids) {
     $("input.cust-id").filter((_, element) => {
         var custId = element.value;
         if (hasId(custId, ids)) {
-            orderList[orderIndex] = getOrderInfo(element);
+            orderList[orderIndex] = getOrderInfo(element, custId);
             orderIndex++;
         }
     });
     return orderList;
 }
 
-function getOrderInfo(input) {
+function getOrderInfo(input, custId) {
     var tagA = $(input).parent().next().children("a")[0];
-    var orderInfo = {"oderId": tagA.text, "url": tagA.href};
+    var orderInfo = {"oderId": tagA.text, "url": tagA.href, "custId": custId};
     return orderInfo;
 }
