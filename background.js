@@ -11,11 +11,13 @@ function getDomainFromUrl(url) {
 }
 
 function checkForValidUrl(tabId, changeInfo, tab) {
-    // if (getDomainFromUrl(tab.url).toLowerCase() == "www.amazon.com") {
-    //     chrome.pageAction.show(tabId);
-    // }
-    chrome.pageAction.show(tabId);
-    currentTabId = tabId;
+    var url = "sellercentral.amazon.com/gp/orders-v2/list";
+    if (tab.url.toLowerCase().indexOf(url) != -1) {
+        chrome.pageAction.show(tabId);
+        currentTabId = tabId;
+    }
+    // chrome.pageAction.show(tabId);
+    // currentTabId = tabId;
 };
 var currentTabId;
 chrome.tabs.onUpdated.addListener(checkForValidUrl);

@@ -1,11 +1,9 @@
 
 chrome.extension.onConnect.addListener((port) => {
     port.onMessage.addListener((userInfo) => {
-        alert("true")
         var orderList = filterOrder(userInfo.ids)
         var info = {"from": "FROM_CONTENT", "orderList": orderList};
         chrome.runtime.connect().postMessage(info);
-        window.reload()
     })
 })
 // chrome.runtime.connect().postMessage(info);
@@ -16,30 +14,33 @@ chrome.extension.sendMessage({"from": "isNeedQuery"}, function(response) {
     }
 });
 
-function hasId(id, ids) {
-    for (str of ids) {
-        if (id == str) {
-            return true;
+function getOrderInfoByCustId(custId, orderInfoList) {
+    for (var orderInfo of orderInfoList) {
+        if (custId == orderInfo.custId) {
+            return orderInfo;
         }
     }
-    return false;
+    return null;
 }
 
-function filterOrder(ids) {
+function filterOrder(orderInfoList) {
     var orderList = new Array();
-    var orderIndex = 0;
-    $("input.cust-id").filter((_, element) => {
+    var custIdInputList = $("input.cust-id");
+    for (var i = 0; i < custIdInputList.length; i++) {
+        var element = custIdInputList[i];
         var custId = element.value;
-        if (hasId(custId, ids)) {
-            orderList[orderIndex] = getOrderInfo(element, custId);
-            orderIndex++;
+        var orderInfo = getOrderInfoByCustId(custId, orderInfoList);
+        if (orderInfo == null) {
+            continue;
         }
-    });
+        orderList.push(getOrderInfo(element, orderInfo));
+    }
     return orderList;
 }
 
-function getOrderInfo(input, custId) {
+function getOrderInfo(input, orderInfo) {
     var tagA = $(input).parent().next().children("a")[0];
-    var orderInfo = {"oderId": tagA.text, "url": tagA.href, "custId": custId};
+    orderInfo.orderId = tagA.text;
+    orderInfo.url = tagA.href;
     return orderInfo;
 }

@@ -1,11 +1,11 @@
 {
-  "name": "My Bookmarks",
+  "name": "AmazonHelper",
   "version": "1.1",
-  "description": "A browser action with a popup dump of all bookmarks, including search, add, edit and delete.",
+  "description": "AMazonHelper",
   "background": { "scripts": [ "background.js" ] },
   "content_scripts": [
     {
-      "matches": ["file:///C:/Users/hero/Desktop/order_list.html"],
+      "matches": ["https://sellercentral.amazon.com/gp/orders-v2/list/*"],
       "js": ["contentscript.js", "jquery-3.2.1.min.js"]
     }
   ],
@@ -18,7 +18,7 @@
       "19": "cnblogs_19.png",
       "38": "cnblogs_38.png"
     },
-    "default_title": "cnblogs.com article information",
+    "default_title": "hero",
     "default_popup": "popup.html"
   },
   "manifest_version": 2,
