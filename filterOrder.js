@@ -44,19 +44,26 @@ $(function () {
     init();
 });
 
-chrome.runtime.onConnect.addListener((port) => {
-    port.onMessage.addListener((info) => {
-        var orderList = info.orderList;
-        if (orderList == null || orderList == undefined || orderList.length == 0) {
-            alert("没有找到符合条件的数据！");
-            return;
-        }
-        for (var orderInfo of orderList) {
-            setLocalData(orderInfo.id, orderInfo.custId, orderInfo.orderId, orderInfo.url);
-            updatOrderInfo(orderInfo);
-        }
-    })
-});
+// chrome.runtime.onConnect.addListener((port) => {
+//     port.onMessage.addListener((info) => {
+//         var orderList = info.orderList;
+//         if (orderList == null || orderList == undefined || orderList.length == 0) {
+//             alert("没有找到符合条件的数据！");
+//             return;
+//         }
+//         for (var orderInfo of orderList) {
+//             setLocalData(orderInfo.id, orderInfo.custId, orderInfo.orderId, orderInfo.url);
+//             updatOrderInfo(orderInfo);
+//         }
+//     })
+// });
+
+function updateInfo(orderList) {
+    for (var orderInfo of orderList) {
+        setLocalData(orderInfo.id, orderInfo.custId, orderInfo.orderId, orderInfo.url);
+        updatOrderInfo(orderInfo);
+    }
+}
 function buildNodes(orderList) {
     var list = $('<ul>');
     var i;
@@ -89,6 +96,7 @@ function addRow(id, custId, orderId, orderUrl) {
     var custIdTD = $("<td>");
     var orderIdTD = $("<td>");
     var opearTD = $("<td>");
+    opearTD.addClass("op_td")
     tr.append(custIdTD).append(orderIdTD).append(opearTD);
     var custInput = $("<input>");
     custInput.attr("type", "text");
@@ -132,7 +140,11 @@ function handleOnInput(event) {
 function handleOnChange(element) {
     let custID = element.value.trim();
     let id = element.id;
-    setLocalData(id, custID)
+    setLocalData(id, custID);
+    let orderInfo = getLocalDataById(id);
+    if (orderInfo != null) {
+        updatOrderInfo(orderInfo);
+    }
 }
 
 function getInputCustIds() {
@@ -171,6 +183,18 @@ function setLocalData(id, custId, orderId, url) {
     saveLocalData(data);
 }
 
+function getLocalDataById(id) {
+    let datas = getLocalData();
+    var order = null;
+    datas.forEach((orderInfo) => {
+        if (orderInfo.id == id) {
+            order = orderInfo;
+            return;
+        }
+    });
+    return order;
+}
+
 function saveLocalData(datas) {
     localStorage.setItem("local_value", JSON.stringify(datas));
 }
@@ -206,8 +230,8 @@ function init() {
 
 function updatOrderInfo(orderInfo) {
     var element = $(`#${orderInfo.id}`).parent().next().find("a")[0];
-    element.text = orderInfo.orderId;
-    element.href = orderInfo.url;
+    element.text = orderInfo.orderId == undefined ? "" : orderInfo.orderId;
+    element.href = orderInfo.url == undefined ? "" : orderInfo.url;
 }
 
 function deleteTR(tr) {

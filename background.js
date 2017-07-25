@@ -15,14 +15,18 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     if (tab.url.toLowerCase().indexOf(url) != -1) {
         chrome.pageAction.show(tabId);
         currentTabId = tabId;
+        return;
     }
-    // chrome.pageAction.show(tabId);
-    // currentTabId = tabId;
+    chrome.pageAction.show(tabId);
+    currentTabId = tabId;
 };
 var currentTabId;
 chrome.tabs.onUpdated.addListener(checkForValidUrl);
 // var port = chrome.tabs.connect(tabId, {"name": "handler"});
-var orderList = new Array();
+var MAX_PAGE = 10;
+var currentPage = 1;
+var orderList;
+var isStarted = false;
 chrome.runtime.onConnect.addListener((port) => {
     port.onMessage.addListener((info) => {
         var orderList = info.orderList;
@@ -39,12 +43,20 @@ chrome.runtime.onConnect.addListener((port) => {
     })
 });
 function sendMsg(userInfo) {
-    orderList.concat(userInfo);
+    currentPage = 1;
+    orderList = userInfo.ids;
+    isStarted = true;
     // chrome.runtime.connect().postMessage(userInfo);
     chrome.tabs.connect(currentTabId, {"name": "handler"}).postMessage(userInfo);
 }
 
 var isNeedQuery = true;
+class NeedQueryResponse {
+    constructor(isNeedQuery, orderInfoList) {
+        this.isNeedQuery = isNeedQuery;
+        this.orderInfoList = orderInfoList;
+    }
+}
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
@@ -52,34 +64,52 @@ chrome.runtime.onMessage.addListener(
             "from a content script:" + sender.tab.url :
             "from the extension");
         if (request.from == "isNeedQuery") {
-            sendResponse({farewell: isNeedQuery});
-            isNeedQuery = !isNeedQuery;
+            let isNeed = checkNeedSearch();
+            sendResponse(new NeedQueryResponse(isNeed, orderList));
+            currentPage++;
         }
 
     });
 
-// chrome.pageAction.onClicked.addListener(function(info) {
-//
-//     if (info.from == "FROM_CONTENT") {
-//         alertUrls(info.urls);
-//     } else {
-//         chrome.tabs.executeScript(null, {file: "contentscript.js"});
-//     }
-//
-// });
-//
-// chrome.runtime.onConnect.addListener(function (prot) {
-//     prot.onMessage.addListener(function (info) {
-//         alertUrls(info.urls);
-//     })
-//
-// });
-//
-// function alertUrls(urls) {
-//     var str = ""
-//     var length = urls.length;
-//     for (var i = 0; i < length; i++) {
-//         str += urls[i] + "\n";
-//     }
-//     alert(str);
-// }
+chrome.runtime.onConnect.addListener((port) => {
+    port.onMessage.addListener((info) => {
+        var orderInfoList = info.orderList;
+        let pop = chrome.extension.getViews({type: 'popup'});
+        if (orderInfoList == null || orderInfoList == undefined || orderInfoList.length == 0) {
+            return;
+        }
+        for (let orderInfo of orderInfoList) {
+            let o = getOrderInfoById(orderInfo.id);
+            if (o != null) {
+                o.orderId = orderInfo.orderId;
+                o.url = orderInfo.url;
+
+            }
+        }
+        pop[0].updateInfo(orderInfoList);
+    })
+});
+
+function getOrderInfoById(id) {
+    for (let orderInfo of orderList) {
+        if (orderInfo.id == id) {
+            return orderInfo;
+        }
+    }
+    return null;
+}
+
+function checkNeedSearch() {
+    if (!isStarted) {
+        return false;
+    }
+    if (currentPage >= MAX_PAGE) {
+        return false;
+    }
+    for (let orderInfo of orderList) {
+        if (orderInfo.orderId == undefined && orderInfo.url == undefined) {
+            return true;
+        }
+    }
+    return false;
+}

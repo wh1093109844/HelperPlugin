@@ -1,18 +1,29 @@
 
 chrome.extension.onConnect.addListener((port) => {
     port.onMessage.addListener((userInfo) => {
-        var orderList = filterOrder(userInfo.ids)
-        var info = {"from": "FROM_CONTENT", "orderList": orderList};
-        chrome.runtime.connect().postMessage(info);
+        // var orderList = filterOrder(userInfo.ids)
+        // var info = {"from": "FROM_CONTENT", "orderList": orderList};
+        // chrome.runtime.connect().postMessage(info);
+        requestNeddQuery();
     })
 })
 // chrome.runtime.connect().postMessage(info);
-chrome.extension.sendMessage({"from": "isNeedQuery"}, function(response) {
-    console.info(response.farewell);
-    if (response.farewell) {
-        window.location.reload();
-    }
-});
+requestNeddQuery();
+
+function requestNeddQuery() {
+    chrome.extension.sendMessage({"from": "isNeedQuery"}, (response) => {
+        if (response.isNeedQuery) {
+            let orderList = filterOrder(response.orderInfoList);
+            let info = {"from": "FROM_CONTENT", "orderList": orderList};
+            chrome.runtime.connect().postMessage(info);
+            goNextPage();
+        }
+    });
+}
+
+function goNextPage() {
+    $("span a.myo_list_orders_link").last()[0].click();
+}
 
 function getOrderInfoByCustId(custId, orderInfoList) {
     for (var orderInfo of orderInfoList) {

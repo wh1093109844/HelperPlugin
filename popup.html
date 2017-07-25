@@ -4,13 +4,28 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <!--<script src="popup.js"></script>-->
     <script src="filterOrder.js"></script>
+    <style type="text/css">
+        td, th {
+            width: 200px;
+            text-align: center;
+        }
+
+        td input {
+            width: 100%;
+        }
+
+        td.op_td, th.op_td {
+            width: 100px;
+            text-align: left;
+        }
+    </style>
 </head>
-    <body style="width: 400px">
+    <body style="width: 600px">
         <table>
             <tr>
                 <th>用户ID</th>
                 <th>订单号</th>
-              <th>操作[<a href="#" id="clean_all">清除</a>]</th>
+                <th class="op_td">操作[<a href="#" id="clean_all">清除</a>]</th>
             </tr>
         </table>
         <input type="button" value="查找" id="search_btn"/>
