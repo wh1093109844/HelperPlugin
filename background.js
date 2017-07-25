@@ -17,8 +17,8 @@ function checkForValidUrl(tabId, changeInfo, tab) {
         currentTabId = tabId;
         return;
     }
-    chrome.pageAction.show(tabId);
-    currentTabId = tabId;
+    // chrome.pageAction.show(tabId);
+    // currentTabId = tabId;
 };
 var currentTabId;
 chrome.tabs.onUpdated.addListener(checkForValidUrl);

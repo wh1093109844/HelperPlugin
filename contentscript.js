@@ -17,6 +17,7 @@ function requestNeddQuery() {
             let info = {"from": "FROM_CONTENT", "orderList": orderList};
             chrome.runtime.connect().postMessage(info);
             goNextPage();
+            setTimeout(requestNeddQuery(), 5000);
         }
     });
 }
@@ -54,4 +55,12 @@ function getOrderInfo(input, orderInfo) {
     orderInfo.orderId = tagA.text;
     orderInfo.url = tagA.href;
     return orderInfo;
+}
+
+var timeout = true; //启动及关闭按钮
+function time()
+{
+    if(timeout) return;
+    requestNeddQuery();
+    setTimeout(time,100); //time是指本身,延时递归调用自己,100为间隔调用时间,单位毫秒
 }
